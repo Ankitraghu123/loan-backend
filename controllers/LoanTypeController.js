@@ -36,8 +36,8 @@ const allLoanTypes = asyncHandler( async(req,res)=>{
   const editLoan = asyncHandler( async(req,res)=>{
     try{
     const {id} = req.params
-      await LoanTypeModel.findByIdAndUpdate(id,req.body)
-      res.status(200).json("loan edited")
+     const editedLoan =  await LoanTypeModel.findByIdAndUpdate(id,req.body)
+      res.status(200).json(editedLoan)
     }catch(error){
       res.status(500).json({ message: 'Unable to edit loan', error: error.message })
     }

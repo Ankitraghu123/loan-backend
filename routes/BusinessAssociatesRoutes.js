@@ -1,10 +1,14 @@
 const express = require('express')
-const { AddBusinessAssociates, allBusinessAssociatess, deleteBusinessociates, editBusinessociates } = require('../controllers/BusinessAssociatesControllers')
+const {  allBusinessAssociatess, deleteBusinessociates, editBusinessociates, Register, Login } = require('../controllers/BusinessAssociatesControllers')
+const {isAdmin } = require('../middlewares/authMiddlewares')
 
 const router = express.Router()
 
 
-router.post('/addBusinessAssociate',AddBusinessAssociates)
+router.post('/register',isAdmin,Register)
+
+router.post('/login',Login)
+
 
 router.get('/all',allBusinessAssociatess)
 

@@ -1,16 +1,46 @@
 const asyncHandler = require('express-async-handler')
-const BusinessAssociatesModel = require('../models/BusinessAssociatesModel')
+const BusinessAssociatesModel = require('../models/BusinessAssociatesModel');
+const { generateToken } = require('../config/jwtToken');
+const { generateRefreshToken } = require('../config/refreshToken');
 
 
-const AddBusinessAssociates = asyncHandler( async(req,res)=>{
+const Register = asyncHandler( async(req,res)=>{
   try{
-    const newBusinessociates = await BusinessAssociatesModel.create(req.body)
-    res.status(200).json(newBusinessociates)
+   const newBusinessAssociate = await BusinessAssociatesModel.create(req.body)
+   const token = generateToken(newBusinessAssociate._id);
+
+   res.status(201).json({ newBusinessAssociate, token });
   }catch(error){
-    res.status(500).json({ message: 'add Businessociates type failed', error: error.message })
+   res.status(500).json({ message: 'Registration failed', error: error.message });
   }
-   
+  
 })
+
+const Login = asyncHandler(async(req,res)=>{
+  try{
+      const {email,password} = req.body
+      const findBusinessAssociate = await BusinessAssociatesModel.findOne({email})
+      if(findBusinessAssociate && await findBusinessAssociate.isPasswordMatched(password)){
+          const refreshToken = await generateRefreshToken(findBusinessAssociate._id)
+          const updateBusinessAssociate = await BusinessAssociatesModel.findOneAndUpdate(findBusinessAssociate._id,{refreshToken},{new:true})
+          res.cookie('refreshToken',refreshToken,{
+              httpOnly:true,
+              maxAge : 72 * 60 * 60 * 1000
+          })
+          res.json({
+              _id:findBusinessAssociate._id,
+              name:findBusinessAssociate.name,
+              email:findBusinessAssociate.email,
+              token:generateToken(findBusinessAssociate._id)
+          })
+      }else{
+          throw new Error('Invalid credientials')
+      }
+  }catch(error){
+      res.status(500).json({ message: 'Login failed', error: error.message });
+  }
+})
+
 
 const allBusinessAssociatess = asyncHandler( async(req,res)=>{
     try{
@@ -47,4 +77,4 @@ const allBusinessAssociatess = asyncHandler( async(req,res)=>{
 
 
 
-module.exports = {AddBusinessAssociates,allBusinessAssociatess,deleteBusinessociates,editBusinessociates}
+module.exports = {Register,Login,allBusinessAssociatess,deleteBusinessociates,editBusinessociates}

@@ -1,13 +1,25 @@
 const express = require('express')
-const { AddLead, GetAllLead, EditLead, DeleteLead } = require('../controllers/LeadControllers')
+const { AddLead, GetAllLead, EditLead, DeleteLead, GetSingleLead, getLeadsByBusinessAssociate, getPendingLeadsByBusinessAssociate,  getRejectedLeadsByBusinessAssociate, getSanctionedLeadsByBusinessAssociate } = require('../controllers/LeadControllers')
+const {  isAdmin, isAssociate } = require('../middlewares/authMiddlewares')
 const router = express.Router()
 
-router.post('/addLead',AddLead)
+router.post('/addLead',isAssociate,AddLead)
 
-router.get('/all',GetAllLead)
+router.get('/all',isAdmin, GetAllLead)
+
+router.get('/:id',isAssociate,GetSingleLead)
 
 router.put('/:id',EditLead)
 
 router.delete('/:id',DeleteLead)
+
+router.get('/:businessAssociateId/all',getLeadsByBusinessAssociate)
+
+router.get('/:businessAssociateId/pending',getPendingLeadsByBusinessAssociate)
+
+router.get('/:businessAssociateId/sanctioned',getSanctionedLeadsByBusinessAssociate)
+
+router.get('/:businessAssociateId/rejected',getRejectedLeadsByBusinessAssociate)
+
 
 module.exports = router

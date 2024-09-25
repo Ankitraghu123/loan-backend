@@ -9,8 +9,14 @@ const LeadSchema = new mongoose.Schema({
     minlength: [2, 'Name must be at least 2 characters long'],
   },
   mobileNumber: {
-    type: Number,
-    required: true,
+    type: String,
+    unique:true,
+    // required: [true, 'Mobile number is required'],
+    trim: true,
+    match: [
+        /^[0-9]{10}$/,
+        "Please enter a valid 10-digit mobile number"
+    ],
   },
   alternateMobileNumber: {
     type: Number,
@@ -31,6 +37,7 @@ const LeadSchema = new mongoose.Schema({
     required: true
   },
   businessAssociate: {
+    // type:String
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'BusinessAssociates',
   },
@@ -54,10 +61,17 @@ const LeadSchema = new mongoose.Schema({
   meetingRecords: [{
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'MeetingRecord'
-  }]
+  }],
+  status: {
+    type: String,
+    enum: ['pending','sanctioned','rejected'], 
+    default: 'pending'
+  },
 }, {
   timestamps: true
 });
+
+// LeadSchema.index({ mobileNumber: 1 }, { unique: true });
 
 const LeadModel = mongoose.model('Lead', LeadSchema);
 
