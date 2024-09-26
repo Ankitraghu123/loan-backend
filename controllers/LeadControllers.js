@@ -132,13 +132,18 @@ const AddLead = asyncHandler(async (req, res) => {
     }
   });
 
-  
-
   const EditLead = asyncHandler(async (req, res) => {
     try {
       const { id } = req.params; 
       const updateData = req.body; 
   
+      // Fetch the current lead
+      const existingLead = await LeadModel.findById(id);
+      if (!existingLead) {
+        return res.status(404).json({ message: 'Lead not found' });
+      }
+  
+      // Update the lead
       const updatedLead = await LeadModel.findByIdAndUpdate(id, updateData, {
         new: true, 
         runValidators: true 
@@ -146,6 +151,37 @@ const AddLead = asyncHandler(async (req, res) => {
   
       if (!updatedLead) {
         return res.status(404).json({ message: 'Lead not found' });
+      }
+  
+      // Check if loanType or loanPersonType has changed
+      const loanTypeChanged = existingLead.loanType !== updatedLead.loanType;
+      const loanPersonTypeChanged = existingLead.loanPersonType !== updatedLead.loanPersonType;
+  
+      if (loanTypeChanged || loanPersonTypeChanged) {
+        console.log('hii')
+        const loanTypeDocument = await LoanTypeModel.findById(updatedLead.loanType).select('loanName');
+        if (!loanTypeDocument) {
+          return res.status(404).json({ message: 'Loan type not found' });
+        }
+  
+        // Fetch the documents from LoanDocumentsModel based on the new loan type and person type
+        const clonedDocs = await LoanDocumnetsModel.find({
+          loanType: loanTypeDocument.loanName,
+          loanPersonType: updatedLead.loanPersonType
+        });
+  
+        // Transform the cloned documents to match the lead's docs structure
+        const transformedDocs = clonedDocs.map(doc => ({
+          name: doc.name, 
+          file: '',         
+          status: 'pending' 
+        }));
+  
+        // Update the lead with cloned documents if any are found
+        if (transformedDocs.length > 0) {
+          updatedLead.docs = transformedDocs;
+          await updatedLead.save();
+        }
       }
   
       res.status(200).json({
@@ -160,6 +196,34 @@ const AddLead = asyncHandler(async (req, res) => {
       });
     }
   });
+  
+
+  // const EditLead = asyncHandler(async (req, res) => {
+  //   try {
+  //     const { id } = req.params; 
+  //     const updateData = req.body; 
+  
+  //     const updatedLead = await LeadModel.findByIdAndUpdate(id, updateData, {
+  //       new: true, 
+  //       runValidators: true 
+  //     });
+  
+  //     if (!updatedLead) {
+  //       return res.status(404).json({ message: 'Lead not found' });
+  //     }
+  
+  //     res.status(200).json({
+  //       message: 'Lead updated successfully',
+  //       data: updatedLead
+  //     });
+  
+  //   } catch (error) {
+  //     res.status(500).json({
+  //       message: 'Failed to update lead',
+  //       error: error.message
+  //     });
+  //   }
+  // });
 
 
   const DeleteLead = asyncHandler(async (req, res) => {

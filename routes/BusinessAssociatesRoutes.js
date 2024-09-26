@@ -10,10 +10,10 @@ router.post('/register',isAdmin,Register)
 router.post('/login',Login)
 
 
-router.get('/all',allBusinessAssociatess)
+router.get('/all',isAdmin,allBusinessAssociatess)
 
-router.delete('/:id',deleteBusinessociates)
+router.delete('/:id',isAdmin,deleteBusinessociates)
 
-router.put('/:id',editBusinessociates)
+router.put('/:id',isAdmin,editBusinessociates)
 
 module.exports = router
