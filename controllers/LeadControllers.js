@@ -330,6 +330,7 @@ const AddLead = asyncHandler(async (req, res) => {
         // Update the document with the uploaded file URL and mark it as completed
         lead.docs[docIndex].file = uploadResponse.url; // URL from ImageKit
         lead.docs[docIndex].status = 'submitted';
+        lead.docs[docIndex].date = new Date();  
   
         // Save the updated lead with the new document info
         await lead.save();

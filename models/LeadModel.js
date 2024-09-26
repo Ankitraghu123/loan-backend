@@ -80,6 +80,9 @@ const LeadSchema = new mongoose.Schema({
       enum: ['pending', 'submitted'],
       default: 'pending',
     },
+    date:{
+      type:Date
+    }
   }],
 
 }, {
