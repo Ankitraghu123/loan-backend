@@ -66,8 +66,8 @@ const allBusinessAssociatess = asyncHandler( async(req,res)=>{
   const editBusinessociates = asyncHandler( async(req,res)=>{
     try{
     const {id} = req.params
-      await BusinessAssociatesModel.findByIdAndUpdate(id,req.body)
-      res.status(200).json("Businessociates edited")
+      const associate = await BusinessAssociatesModel.findByIdAndUpdate(id,req.body)
+      res.status(200).json(associate)
     }catch(error){
       res.status(500).json({ message: 'Unable to edit Businessociates', error: error.message })
     }

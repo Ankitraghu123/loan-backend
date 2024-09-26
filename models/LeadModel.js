@@ -36,6 +36,11 @@ const LeadSchema = new mongoose.Schema({
     ref: 'LoanType',
     required: true
   },
+  loanPersonType:{
+    type: String,
+    required:true,
+    enum: ['selfEmployed', 'salaried'], 
+  },
   businessAssociate: {
     // type:String
     type: mongoose.Schema.Types.ObjectId, 
@@ -67,6 +72,16 @@ const LeadSchema = new mongoose.Schema({
     enum: ['pending','sanctioned','rejected'], 
     default: 'pending'
   },
+  docs: [{
+    name: String,    // Document name
+    file: String,    // File URL
+    status: {
+      type: String,
+      enum: ['pending', 'submitted'],
+      default: 'pending',
+    },
+  }],
+
 }, {
   timestamps: true
 });
