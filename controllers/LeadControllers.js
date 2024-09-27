@@ -33,12 +33,17 @@ const AddLead = asyncHandler(async (req, res) => {
       alternateMobileNumber,
       email,
       loanType,
-      businessAssociate,
       referralName,
       lastAppliedBank,
       lastRejectionReason,
       loanPersonType
     });
+
+    if(businessAssociate){
+      newLead.businessAssociate = businessAssociate
+    }else{
+      return res.status(404).json({ message: 'select a business associate' });
+    }
 
     // Save the new lead
     const savedLead = await newLead.save();
