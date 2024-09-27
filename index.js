@@ -14,6 +14,7 @@ const BusinessAssociatesRouter = require('./routes/BusinessAssociatesRoutes')
 const LeadRouter = require('./routes/LeadRoutes')
 const CallRouter = require('./routes/CallRoutes')
 const MeetingRouter = require('./routes/MeetingRoutes')
+const FileStagesRouter = require('./routes/FileStagesRoute')
 
 //documents routes
 const LoanDocRouter = require('./routes/LoanDocumentsRoute')
@@ -40,6 +41,7 @@ app.use('/api/lead',LeadRouter)
 app.use('/api/call',CallRouter)
 app.use('/api/meeting',MeetingRouter)
 app.use('/api/loanDoc',LoanDocRouter)
+app.use('/api/fileStages',FileStagesRouter)
 
 app.use(notFound)
 app.use(errorHandler)

@@ -4,6 +4,7 @@ const BusinessAssociatesModel = require('../models/BusinessAssociatesModel');
 const LoanTypeModel = require('../models/LoanTypeModel')
 const imageKit = require('../config/imageKit');
 const LoanDocumnetsModel = require('../models/LoanDocumentsModel');
+const FileStagesModel = require('../models/FileStagesModel');
 
 const AddLead = asyncHandler(async (req, res) => {
   try {
@@ -56,6 +57,11 @@ const AddLead = asyncHandler(async (req, res) => {
       loanPersonType: loanPersonType
     });
 
+    const clonedStages = await FileStagesModel.find({
+      loanType: loanTypeDocument.loanName,  // Use the loan name for filtering
+      loanPersonType: loanPersonType
+    })
+
     console.log(clonedDocs)
 
 
@@ -66,10 +72,24 @@ const AddLead = asyncHandler(async (req, res) => {
       status: 'pending' // Default status
     }));
 
+    const sortedStages = clonedStages.sort((a, b) => a.sequence - b.sequence);
+
+    const stagedData = sortedStages.map(stage => ({
+      name:stage.name,
+      status:'pending',
+      sequence:stage.sequence,
+      remark:'',
+    }))
+
     // Update the lead with cloned documents if any are found
     if (transformedDocs.length > 0) {
       savedLead.docs = transformedDocs;
       await savedLead.save();
+    }
+
+    if(stagedData.length > 0){
+      savedLead.fileStages = stagedData
+      await savedLead.save()
     }
 
     // If businessAssociate is provided, update the BusinessAssociate model
@@ -509,8 +529,6 @@ const AddLead = asyncHandler(async (req, res) => {
       });
     }
   });
-  
-  
   
   
 
