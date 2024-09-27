@@ -62,7 +62,6 @@ const AddLead = asyncHandler(async (req, res) => {
       loanPersonType: loanPersonType
     })
 
-    console.log(clonedDocs)
 
 
     // Transform the cloned documents to match the lead's docs structure
@@ -155,8 +154,7 @@ const AddLead = asyncHandler(async (req, res) => {
   const EditLead = asyncHandler(async (req, res) => {
     try {
       const { id } = req.params; 
-      const updateData = req.body; 
-  
+      const updateData = req.body;   
       // Fetch the current lead
       const existingLead = await LeadModel.findById(id);
       if (!existingLead) {
@@ -178,7 +176,6 @@ const AddLead = asyncHandler(async (req, res) => {
       const loanPersonTypeChanged = existingLead.loanPersonType !== updatedLead.loanPersonType;
   
       if (loanTypeChanged || loanPersonTypeChanged) {
-        console.log('hii')
         const loanTypeDocument = await LoanTypeModel.findById(updatedLead.loanType).select('loanName');
         if (!loanTypeDocument) {
           return res.status(404).json({ message: 'Loan type not found' });
@@ -189,6 +186,11 @@ const AddLead = asyncHandler(async (req, res) => {
           loanType: loanTypeDocument.loanName,
           loanPersonType: updatedLead.loanPersonType
         });
+
+        const clonedStages = await FileStagesModel.find({
+          loanType: loanTypeDocument.loanName,  // Use the loan name for filtering
+          loanPersonType: updatedLead.loanPersonType
+        })
   
         // Transform the cloned documents to match the lead's docs structure
         const transformedDocs = clonedDocs.map(doc => ({
@@ -196,13 +198,29 @@ const AddLead = asyncHandler(async (req, res) => {
           file: '',         
           status: 'pending' 
         }));
+
+        const sortedStages = clonedStages.sort((a, b) => a.sequence - b.sequence);
+
+    const stagedData = sortedStages?.map(stage => ({
+      name:stage.name,
+      status:'pending',
+      sequence:stage.sequence,
+      remark:'',
+    }))
   
         // Update the lead with cloned documents if any are found
         if (transformedDocs.length > 0) {
           updatedLead.docs = transformedDocs;
           await updatedLead.save();
         }
+
+        if(stagedData.length > 0){
+          updatedLead.fileStages = stagedData
+          await updatedLead.save()
+        }
       }
+
+      
   
       res.status(200).json({
         message: 'Lead updated successfully',
