@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.post('/addLead',isAssociate,AddLead)
 
-router.post('/upload-doc', isAdmin,uploadDoc)
+router.post('/upload-doc',uploadDoc)
 
 router.put('/edit-doc', isAdmin,editDoc);
 
