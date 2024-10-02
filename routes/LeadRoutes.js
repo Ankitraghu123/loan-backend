@@ -1,5 +1,5 @@
 const express = require('express')
-const { AddLead, GetAllLead, EditLead, DeleteLead, GetSingleLead, getLeadsByBusinessAssociate, getPendingLeadsByBusinessAssociate,  getRejectedLeadsByBusinessAssociate, getSanctionedLeadsByBusinessAssociate, uploadDoc, deleteDoc, editDoc } = require('../controllers/LeadControllers')
+const { AddLead, GetAllLead, EditLead, DeleteLead, GetSingleLead, getLeadsByBusinessAssociate, getPendingLeadsByBusinessAssociate,  getRejectedLeadsByBusinessAssociate, uploadDoc, deleteDoc, editDoc } = require('../controllers/LeadControllers')
 const {  isAdmin, isAssociate } = require('../middlewares/authMiddlewares')
 const router = express.Router()
 
@@ -23,7 +23,7 @@ router.get('/:businessAssociateId/all',getLeadsByBusinessAssociate)
 
 router.get('/:businessAssociateId/pending',getPendingLeadsByBusinessAssociate)
 
-router.get('/:businessAssociateId/sanctioned',getSanctionedLeadsByBusinessAssociate)
+// router.get('/:businessAssociateId/sanctioned',getSanctionedLeadsByBusinessAssociate)
 
 router.get('/:businessAssociateId/rejected',getRejectedLeadsByBusinessAssociate)
 

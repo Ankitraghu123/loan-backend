@@ -10,7 +10,7 @@ const LeadSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
-    unique:true,
+    // unique:true,
     // required: [true, 'Mobile number is required'],
     trim: true,
     match: [
@@ -25,7 +25,7 @@ const LeadSchema = new mongoose.Schema({
   email: {
     type: String,
     trim: true,
-    unique: true,
+    // unique: true,
     match: [
       /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
       "Please enter a valid email address"
@@ -69,7 +69,7 @@ const LeadSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['pending','sanctioned','rejected'], 
+    enum: ['pending','rejected'], 
     default: 'pending'
   },
   docs: [{
@@ -101,6 +101,9 @@ const LeadSchema = new mongoose.Schema({
       type:Date
     }
   }],
+  rejectReason:{
+    type:String
+  }
 
 }, {
   timestamps: true

@@ -96,5 +96,34 @@ const GetAllCallRecord = asyncHandler(async (req, res) => {
   });
 
 
+  const getTodayCallRecords = async (req, res) => {
+    try {
+      // Get today's date (year, month, and day only)
+      const today = moment().startOf('day').toDate(); // Start of today (ignoring time)
+      
+      // Query to find records where the year, month, and day match today's date
+      const todayCallRecords = await CallRecordModel.find({
+        nextCallDate: {
+          $gte: today,
+          $lt: moment(today).add(1, 'day').toDate(), // Less than start of the next day
+        },
+      }).populate('lead'); // Populate lead details if needed
+  
+      // Send the found records in the response
+      res.status(200).json({
+        success: true,
+        data: todayCallRecords,
+      });
+    } catch (error) {
+      // Handle any errors
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve call records',
+        error: error.message,
+      });
+    }
+  };
 
-module.exports = { AddCallRecord ,GetAllCallRecord,GetCallRecordsByLead};
+
+module.exports = { AddCallRecord ,GetAllCallRecord,GetCallRecordsByLead,getTodayCallRecords};

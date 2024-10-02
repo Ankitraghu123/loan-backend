@@ -18,12 +18,55 @@ const AddLead = asyncHandler(async (req, res) => {
       businessAssociate,  // Assuming this is the ID of the business associate
       referralName,
       lastAppliedBank,
-      lastRejectionReason
+      lastRejectionReason,
+      status,
+      rejectReason
     } = req.body;
 
     // Check if required fields are provided
     if (!name || !mobileNumber || !loanType) {
       return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    const existingLead = await LeadModel.findOne({ mobileNumber });
+
+    if (existingLead) {
+      // If lead already exists, set the status to "rejected"
+      const rejectedLead = new LeadModel({
+        name,
+        mobileNumber,
+        alternateMobileNumber,
+        email,
+        loanType,
+        referralName,
+        lastAppliedBank,
+        lastRejectionReason,
+        loanPersonType,
+        status: 'rejected', // Set the status as rejected
+        rejectReason: rejectReason || 'Lead already exists with this mobile number', // Set reject reason
+      });
+
+      if (businessAssociate) {
+        rejectedLead.businessAssociate = businessAssociate;
+        const associatedBusiness = await BusinessAssociatesModel.findById(businessAssociate);
+
+        if (!associatedBusiness) {
+          return res.status(404).json({ message: 'Business associate not found' });
+        }
+  
+        // Add the saved lead's ID to the leads array in BusinessAssociate model
+        associatedBusiness.leads.push(rejectedLead._id);
+        await associatedBusiness.save();
+      } else {
+        return res.status(404).json({ message: 'Select a business associate' });
+      }
+
+      const savedRejectedLead = await rejectedLead.save();
+
+      return res.status(200).json({
+        message: 'Lead already exists, new lead added with status "rejected"',
+        data: savedRejectedLead
+      });
     }
 
     // Create a new lead
@@ -36,7 +79,9 @@ const AddLead = asyncHandler(async (req, res) => {
       referralName,
       lastAppliedBank,
       lastRejectionReason,
-      loanPersonType
+      loanPersonType,
+      status,
+      rejectReason
     });
 
     if(businessAssociate){
@@ -159,6 +204,7 @@ const AddLead = asyncHandler(async (req, res) => {
   const EditLead = asyncHandler(async (req, res) => {
     try {
       const { id } = req.params; 
+      console.log(req.body)
       const updateData = req.body;   
       // Fetch the current lead
       const existingLead = await LeadModel.findById(id);
@@ -271,8 +317,27 @@ const AddLead = asyncHandler(async (req, res) => {
 
   const DeleteLead = asyncHandler(async (req, res) => {
     try {
-      const { id } = req.params; 
+      const { id } = req.params;
   
+      // Find the lead to be deleted
+      const leadToDelete = await LeadModel.findById(id);
+  
+      if (!leadToDelete) {
+        return res.status(404).json({ message: 'Lead not found' });
+      }
+  
+      // Remove the lead from the business associate's leads array
+      if (leadToDelete.businessAssociate) {
+        const businessAssociate = await BusinessAssociatesModel.findById(leadToDelete.businessAssociate);
+  
+        if (businessAssociate) {
+          // Filter out the deleted lead's ID from the business associate's leads array
+          businessAssociate.leads = businessAssociate.leads.filter(leadId => leadId.toString() !== id);
+          await businessAssociate.save();
+        }
+      }
+  
+      // Delete the lead
       const deletedLead = await LeadModel.findByIdAndDelete(id);
   
       if (!deletedLead) {
@@ -291,6 +356,7 @@ const AddLead = asyncHandler(async (req, res) => {
       });
     }
   });
+  
 
   const getLeadsByBusinessAssociate = asyncHandler(async (req, res) => {
     const { businessAssociateId } = req.params;
@@ -367,31 +433,31 @@ const AddLead = asyncHandler(async (req, res) => {
     }
   });
 
-  const getSanctionedLeadsByBusinessAssociate = asyncHandler(async (req, res) => {
-    const { businessAssociateId } = req.params;
+  // const getSanctionedLeadsByBusinessAssociate = asyncHandler(async (req, res) => {
+  //   const { businessAssociateId } = req.params;
   
-    try {
-      // Find all pending leads for the given business associate ID
-      const sanctionedLeads = await LeadModel.find({
-        status: 'sanctioned',
-        businessAssociate: businessAssociateId
-      }).populate('loanType businessAssociate callRecords meetingRecords');
+  //   try {
+  //     // Find all pending leads for the given business associate ID
+  //     const sanctionedLeads = await LeadModel.find({
+  //       status: 'sanctioned',
+  //       businessAssociate: businessAssociateId
+  //     }).populate('loanType businessAssociate callRecords meetingRecords');
   
-      if (!sanctionedLeads.length) {
-        return res.status(404).json({ message: 'No sanctioned leads found for this business associate' });
-      }
+  //     if (!sanctionedLeads.length) {
+  //       return res.status(404).json({ message: 'No sanctioned leads found for this business associate' });
+  //     }
   
-      res.status(200).json({
-        message: 'sanctioned leads fetched successfully',
-        data: sanctionedLeads
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: 'Failed to fetch sanctioned leads',
-        error: error.message
-      });
-    }
-  });
+  //     res.status(200).json({
+  //       message: 'sanctioned leads fetched successfully',
+  //       data: sanctionedLeads
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({
+  //       message: 'Failed to fetch sanctioned leads',
+  //       error: error.message
+  //     });
+  //   }
+  // });
 
 
   const uploadDoc = asyncHandler (async (req, res) => {
@@ -556,4 +622,4 @@ const AddLead = asyncHandler(async (req, res) => {
   
 
 
-module.exports = {AddLead,GetAllLead,EditLead,DeleteLead,GetSingleLead,getLeadsByBusinessAssociate,getPendingLeadsByBusinessAssociate,getRejectedLeadsByBusinessAssociate,getSanctionedLeadsByBusinessAssociate,uploadDoc,editDoc,deleteDoc}
+module.exports = {AddLead,GetAllLead,EditLead,DeleteLead,GetSingleLead,getLeadsByBusinessAssociate,getPendingLeadsByBusinessAssociate,getRejectedLeadsByBusinessAssociate,uploadDoc,editDoc,deleteDoc}
