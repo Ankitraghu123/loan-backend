@@ -35,6 +35,9 @@ const CallRecordSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, 
     required: true
+  },
+  isImportant:{
+    type:Boolean
   }
 }, {
   timestamps: true

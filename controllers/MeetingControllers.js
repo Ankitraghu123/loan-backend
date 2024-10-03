@@ -11,6 +11,7 @@ const AddMeetingRecord = asyncHandler(async (req, res) => {
       remark,
       nextMeetingDate,
       empId,
+      isImportant
     } = req.body;
 
     if (!customName || !mobileNumber || !lead) {
@@ -25,6 +26,7 @@ const AddMeetingRecord = asyncHandler(async (req, res) => {
       remark,
       nextMeetingDate,
       empId,
+      isImportant
     });
 
     // Save the meeting record to the database

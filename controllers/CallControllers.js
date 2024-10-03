@@ -13,6 +13,7 @@ const AddCallRecord = asyncHandler(async (req, res) => {
       remark,
       nextCallDate,
       empId,
+      isImportant
     } = req.body;
 
     if (!customName || !mobileNumber || !lead) {
@@ -26,6 +27,7 @@ const AddCallRecord = asyncHandler(async (req, res) => {
       remark,
       nextCallDate,
       empId,
+      isImportant
     });
 
     const savedCallRecord = await newCallRecord.save();
