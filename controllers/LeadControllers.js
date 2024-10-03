@@ -356,6 +356,26 @@ const AddLead = asyncHandler(async (req, res) => {
       });
     }
   });
+
+
+  const getAllRejectedLead = asyncHandler(async (req, res) => {
+    try {
+      const rejectedLeads = await LeadModel.find({
+        status: 'rejected', 
+      }).populate('loanType').populate('businessAssociate')
+  
+      res.status(200).json({
+        success: true,
+        data: rejectedLeads,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch leads',
+        error: error.message,
+      });
+    }
+  });
   
 
   const getLeadsByBusinessAssociate = asyncHandler(async (req, res) => {
@@ -622,4 +642,4 @@ const AddLead = asyncHandler(async (req, res) => {
   
 
 
-module.exports = {AddLead,GetAllLead,EditLead,DeleteLead,GetSingleLead,getLeadsByBusinessAssociate,getPendingLeadsByBusinessAssociate,getRejectedLeadsByBusinessAssociate,uploadDoc,editDoc,deleteDoc}
+module.exports = {AddLead,GetAllLead,EditLead,DeleteLead,GetSingleLead,getLeadsByBusinessAssociate,getPendingLeadsByBusinessAssociate,getRejectedLeadsByBusinessAssociate,uploadDoc,editDoc,deleteDoc,getAllRejectedLead}
